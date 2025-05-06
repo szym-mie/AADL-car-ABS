@@ -1,6 +1,6 @@
 # AADL-car-ABS
 
-System rzeczywisty modelujacy system ABS w samochodzie.
+System czasu rzeczywistego modelujacy system ABS w samochodzie.
 
 ## Podstawowe komponenty
 
