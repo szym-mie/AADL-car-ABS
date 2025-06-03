@@ -54,7 +54,11 @@ powodujac poslizg kol. W trakcie dzialania systemu, miga pomaranczowa kontrolka 
 w wypadku zbyt niskiego cisnienia w ukladzie swieci sie kontrolka hamulcow.
 
 ## Podstawowe komponenty
-
+- *(data)* AngleVel - typ danych predkosci katowej 12-bitowy fixed-point 
+- *(data)* HydroPres - typ danych cisnienia hydraulicznego 12-bitowy fixed-point
+- *(data)* ValvePos - typ danych pozycji zaworu - zwiekszenie cisnienia, zmniejszenie cisnienia, zamkniety
+- *(data)* OnOff - typ danych wylaczenia/wlaczenia
+- *(data)* CANPacket - abstrakcyjny pakiet CAN
 - *(processor, memory)* mikroprocesor z pamięcią RAM i ROM
 - *(bus)* magistrale: wewn. (Int) i zewn. (Prh), CAN
 - *(device)* 4 czujniki prędkości obrotowej dla każdego koła
