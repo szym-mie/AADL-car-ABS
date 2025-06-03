@@ -17,6 +17,10 @@ np. czujniki prędkości obrotowej obsługuje jeden proces. System zawiera zatem
 zbierania danych predkości obrotowej, obsługi elektrozaworów, obsługi pompy,
 sprawdzenia ciśnienia układu, kontrolek inforumujących o stanie systemu.
 
+W trakcie pracy i czuwania systemu co 20ms wysylane jest na magistrale CAN
+pakiety: stanu blokady kol (prekosc i pozycje zaworow), stanu ukladu hydraulicznego
+(cisnienie i stan zalaczenia pompy).
+
 ### Zachowanie systemu
 
 Oprócz danych o prędkości obrotowej kół, istnieje szereg innych czynników wpływajacy
@@ -52,15 +56,17 @@ w wypadku zbyt niskiego cisnienia w ukladzie swieci sie kontrolka hamulcow.
 ## Podstawowe komponenty
 
 - *(processor, memory)* mikroprocesor z pamięcią RAM i ROM
-- *(bus)* magistrale: wewn. (Int) i zewn. (Prh)
+- *(bus)* magistrale: wewn. (Int) i zewn. (Prh), CAN
 - *(device)* 4 czujniki prędkości obrotowej dla każdego koła
 - *(device)* 2 elektrozawory obu obwodów
 - *(device)* pompa stabilizująca ciśnienie w układzie hamulcowym
 - *(device)* czujnik ciśnienia układu hamulcowego
 - *(device)* kontrolka informująca kierowce o aktywacji systemu
 - *(device)* kontrolka informująca o awarii systemu ABS / układu hamowania
-- *(process)* kontroler predkosci kol i poslizgu
-- *(process)* kontroler stabilizacji cisnienia
+- *(device)* transmitter/receiver pakietow CAN
+- *(process & 1 thread)* kontroler predkosci kol i poslizgu
+- *(process & 1 thread)* kontroler stabilizacji cisnienia
+- *(process & 2 threads)* emiter stanu systemu (blokowania kol, cisnienia systemu hamowania)
 
 ## Schemat systemu
 
