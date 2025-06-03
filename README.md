@@ -1,19 +1,12 @@
 # AADL-car-ABS
 
+#### Szymon Miekina - smiekina@student.agh.edu.pl
+
 System czasu rzeczywistego modelujący system ABS w samochodzie.
 
-## Podstawowe komponenty
+## Opis systemu
 
-- kontroler układu z pamięcią RAM i ROM
-- magistrale: wewn. i zewn.
-- 4 czujniki prędkości obrotowej dla każdego koła
-- 2 elektrozawory obu obwodów / 4 elektrozawory dla każdego koła
-- pompa stabilizująca ciśnienie w układzie hamulcowym
-- czujnik ciśnienia układu hamulcowego
-- kontrolka informująca kierowce o aktywacji systemu
-- kontrolka informująca o awarii systemu ABS / układu hamowania
-
-## Interakcje w systemie
+### Interakcje w systemie
 
 Mikroprocesor komunikuje się z pamięciami RAM i ROM poprzez wewnętrzną magistrale,
 która sluży wyłącznie do celów oprogramowania układu, reszta urządzeń jest podłączona
@@ -24,7 +17,7 @@ np. czujniki prędkości obrotowej obsługuje jeden proces. System zawiera zatem
 zbierania danych predkości obrotowej, obsługi elektrozaworów, obsługi pompy,
 sprawdzenia ciśnienia układu, kontrolek inforumujących o stanie systemu.
 
-## Zachowanie systemu
+### Zachowanie systemu
 
 Oprócz danych o prędkości obrotowej kół, istnieje szereg innych czynników wpływajacy
 na parametry systemu - jednym z nich jest sam kierowca, który zmienia ciśnienie w
@@ -49,3 +42,148 @@ vice versa.
 
 Kontrolki stanu systemu informują kierowce o zadziałaniu systemu i ew. uszkodzeniu układu
 ABS lub/i hamulcowego.
+
+## Opis dla kierowcy
+
+Kierowca ma posredni lecz realny wplyw na stan systemu korzystajac z hamulca i potencjalnie
+powodujac poslizg kol. W trakcie dzialania systemu, miga pomaranczowa kontrolka ABS,
+w wypadku zbyt niskiego cisnienia w ukladzie swieci sie kontrolka hamulcow.
+
+## Podstawowe komponenty
+
+- *(processor, memory)* mikroprocesor z pamięcią RAM i ROM
+- *(bus)* magistrale: wewn. (Int) i zewn. (Prh)
+- *(device)* 4 czujniki prędkości obrotowej dla każdego koła
+- *(device)* 2 elektrozawory obu obwodów
+- *(device)* pompa stabilizująca ciśnienie w układzie hamulcowym
+- *(device)* czujnik ciśnienia układu hamulcowego
+- *(device)* kontrolka informująca kierowce o aktywacji systemu
+- *(device)* kontrolka informująca o awarii systemu ABS / układu hamowania
+- *(process)* kontroler predkosci kol i poslizgu
+- *(process)* kontroler stabilizacji cisnienia
+
+## Schemat systemu
+
+![abs_schemat](./abs.jpg)
+
+## Analiza systemu
+
+### Not Bound Resources Budget
+
+```csv
+Component,Capacity
+processor Cpu, 1.000 MIPS,
+Total, 1.000 MIPS,
+
+
+Detailed MIPS Budget Report 
+
+Component,Budget,Actual,Notes
+device HydroValveLR, 0.000 MIPS,0.000 MIPS,
+device HydroValveRL, 0.000 MIPS,0.000 MIPS,
+device HydroPump, 0.000 MIPS,0.000 MIPS,
+device HydroPresSensor, 0.000 MIPS,0.000 MIPS,
+device AngleVelSensorFL, 0.000 MIPS,0.000 MIPS,
+device AngleVelSensorFR, 0.000 MIPS,0.000 MIPS,
+device AngleVelSensorBL, 0.000 MIPS,0.000 MIPS,
+device AngleVelSensorBR, 0.000 MIPS,0.000 MIPS,
+device IndicatorLockup, 0.000 MIPS,0.000 MIPS,
+device IndicatorFault, 0.000 MIPS,0.000 MIPS,
+process LockupCtrlProc, 0.700 MIPS,0.000 MIPS,process abs_impl_Instance.LockupCtrlProc total 0.000 MIPS below budget 0.700 MIPS (100.0 % slack)
+process PresStabCtrlProc, 0.200 MIPS,0.000 MIPS,process abs_impl_Instance.PresStabCtrlProc total 0.000 MIPS below budget 0.200 MIPS (100.0 % slack)
+Total, ,0.900 MIPS,
+```
+
+### Bound Resources Capacity
+
+```csv
+Processor Summary Report: 
+  Processor Cpu: Total MIPS 0.900 MIPS of bound tasks within MIPS capacity 1.000 MIPS of Cpu
+
+Memory Summary Report: 
+  No Memory with Memory_Size or RAMCapacity or ROMCapacity
+
+
+Detailed Workload Report:  for Processor Cpu with Capacity 1.000 MIPS
+
+Component,Budget,Actual
+process LockupCtrlProc, 0.700 MIPS,0.000 MIPS,process abs_impl_Instance.LockupCtrlProc total 0.000 MIPS below budget 0.700 MIPS (100.0 % slack)
+process PresStabCtrlProc, 0.200 MIPS,0.000 MIPS,process abs_impl_Instance.PresStabCtrlProc total 0.000 MIPS below budget 0.200 MIPS (100.0 % slack)
+Total,,0.900 MIPS
+```
+
+### Weight Totals
+
+```csv
+Weight totals Report
+
+HydroValveLR: [L] Sum of weights / gross weight is 1.600 kg (no limit specified)
+HydroValveRL: [L] Sum of weights / gross weight is 1.600 kg (no limit specified)
+HydroPump: [L] Sum of weights / gross weight is 2.400 kg (no limit specified)
+HydroPresSensor: [L] Sum of weights / gross weight is 0.600 kg (no limit specified)
+AngleVelSensorFL: [L] Sum of weights / gross weight is 0.400 kg (no limit specified)
+AngleVelSensorFR: [L] Sum of weights / gross weight is 0.400 kg (no limit specified)
+AngleVelSensorBL: [L] Sum of weights / gross weight is 0.400 kg (no limit specified)
+AngleVelSensorBR: [L] Sum of weights / gross weight is 0.400 kg (no limit specified)
+IndicatorLockup: [L] Sum of weights / gross weight is 0.100 kg (no limit specified)
+IndicatorFault: [L] Sum of weights / gross weight is 0.100 kg (no limit specified)
+Warning! abs_impl_Instance: [G] Sum of weights (8.000 kg) less than gross weight of 9.000 kg (using gross weight)
+abs_impl_Instance: [L] Sum of weights / gross weight is 9.000 kg (no limit specified)
+```
+
+### Bus Load
+
+```csv
+Bus load analysis of abs_impl_Instance
+
+
+"Physical Bus","Capacity (KB/s)","Budget (KB/s)","Required Budget (KB/s)","Actual (KB/s)"
+"IntBus","2000.0","200.0","0.0","0.0"
+"PrhBus","1000.0","100.0","0.0","0.0"
+
+"Bus IntBus has data overhead of 0 bytes"
+"Bound Virtual Bus/Connection","Capacity (KB/s)","Budget (KB/s)","Required Budget (KB/s)","Actual (KB/s)"
+
+"Bus PrhBus has data overhead of 0 bytes"
+"Bound Virtual Bus/Connection","Capacity (KB/s)","Budget (KB/s)","Required Budget (KB/s)","Actual (KB/s)"
+"HydroPresSensor.Value -> PresStabCtrlProc.PresValue","","0.0","","0.0"
+"AngleVelSensorFL.Value -> LockupCtrlProc.AngleVelValueFL","","0.0","","0.0"
+"AngleVelSensorFR.Value -> LockupCtrlProc.AngleVelValueFR","","0.0","","0.0"
+"AngleVelSensorBL.Value -> LockupCtrlProc.AngleVelValueBL","","0.0","","0.0"
+"AngleVelSensorBR.Value -> LockupCtrlProc.AngleVelValueBR","","0.0","","0.0"
+"LockupCtrlProc.ValvePosLR -> HydroValveLR.Pos","","0.0","","0.0"
+"LockupCtrlProc.ValvePosRL -> HydroValveRL.Pos","","0.0","","0.0"
+"LockupCtrlProc.IndicatorLockUpOn -> IndicatorLockup.On","","0.0","","0.0"
+"PresStabCtrlProc.PumpOn -> HydroPump.On","","0.0","","0.0"
+"PresStabCtrlProc.IndicatorFaultOn -> IndicatorFault.On","","0.0","","0.0"
+
+"Connection HydroPresSensor.Value -> PresStabCtrlProc.PresValue bound to PrhBus"
+"WARNING: Connection HydroPresSensor.Value -> PresStabCtrlProc.PresValue has no bandwidth budget"
+
+"Connection AngleVelSensorFL.Value -> LockupCtrlProc.AngleVelValueFL bound to PrhBus"
+"WARNING: Connection AngleVelSensorFL.Value -> LockupCtrlProc.AngleVelValueFL has no bandwidth budget"
+
+"Connection AngleVelSensorFR.Value -> LockupCtrlProc.AngleVelValueFR bound to PrhBus"
+"WARNING: Connection AngleVelSensorFR.Value -> LockupCtrlProc.AngleVelValueFR has no bandwidth budget"
+
+"Connection AngleVelSensorBL.Value -> LockupCtrlProc.AngleVelValueBL bound to PrhBus"
+"WARNING: Connection AngleVelSensorBL.Value -> LockupCtrlProc.AngleVelValueBL has no bandwidth budget"
+
+"Connection AngleVelSensorBR.Value -> LockupCtrlProc.AngleVelValueBR bound to PrhBus"
+"WARNING: Connection AngleVelSensorBR.Value -> LockupCtrlProc.AngleVelValueBR has no bandwidth budget"
+
+"Connection LockupCtrlProc.ValvePosLR -> HydroValveLR.Pos bound to PrhBus"
+"WARNING: Connection LockupCtrlProc.ValvePosLR -> HydroValveLR.Pos has no bandwidth budget"
+
+"Connection LockupCtrlProc.ValvePosRL -> HydroValveRL.Pos bound to PrhBus"
+"WARNING: Connection LockupCtrlProc.ValvePosRL -> HydroValveRL.Pos has no bandwidth budget"
+
+"Connection LockupCtrlProc.IndicatorLockUpOn -> IndicatorLockup.On bound to PrhBus"
+"WARNING: Connection LockupCtrlProc.IndicatorLockUpOn -> IndicatorLockup.On has no bandwidth budget"
+
+"Connection PresStabCtrlProc.PumpOn -> HydroPump.On bound to PrhBus"
+"WARNING: Connection PresStabCtrlProc.PumpOn -> HydroPump.On has no bandwidth budget"
+
+"Connection PresStabCtrlProc.IndicatorFaultOn -> IndicatorFault.On bound to PrhBus"
+"WARNING: Connection PresStabCtrlProc.IndicatorFaultOn -> IndicatorFault.On has no bandwidth budget"
+```
