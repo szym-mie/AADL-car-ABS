@@ -253,3 +253,11 @@ Bus load analysis of abs_impl_Instance
 "Connection EmitCANCtrlProc.PacketOut -> CANEndpoint.PacketIn bound to CANBus"
 "WARNING: Connection EmitCANCtrlProc.PacketOut -> CANEndpoint.PacketIn has no bandwidth budget"
 ```
+
+Connection Binding Consistency
+
+```csv
+Check connection binding consistency Report
+
+ERROR:  EmitCANCtrlProc.PacketOut -> CANEndpoint.PacketIn: Hardware (processor or device) of connection destination is not physically connected by bus specified in connection binding.
+```
