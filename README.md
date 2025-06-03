@@ -70,7 +70,13 @@ w wypadku zbyt niskiego cisnienia w ukladzie swieci sie kontrolka hamulcow.
 
 ## Schemat systemu
 
+#### Uproszczony
+
 ![abs_schemat](./abs.jpg)
+
+#### Actual Bindings
+
+![abs_extra_schemat](./abs_extra.jpg)
 
 ## Analiza systemu
 
