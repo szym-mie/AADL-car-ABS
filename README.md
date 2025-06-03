@@ -77,9 +77,18 @@ w wypadku zbyt niskiego cisnienia w ukladzie swieci sie kontrolka hamulcow.
 ### Not Bound Resources Budget
 
 ```csv
+Resource Summary: 
+  MIPS capacity 1.200 MIPS : MIPS budget 1.000 MIPS
+  1 out of 1 with MIPS capacity
+  3 out of 3 with MIPS budget
+
+
+
+Detailed Processor MIPS Capacity Report 
+
 Component,Capacity
-processor Cpu, 1.000 MIPS,
-Total, 1.000 MIPS,
+processor Cpu, 1.200 MIPS,
+Total, 1.200 MIPS,
 
 
 Detailed MIPS Budget Report 
@@ -95,27 +104,32 @@ device AngleVelSensorBL, 0.000 MIPS,0.000 MIPS,
 device AngleVelSensorBR, 0.000 MIPS,0.000 MIPS,
 device IndicatorLockup, 0.000 MIPS,0.000 MIPS,
 device IndicatorFault, 0.000 MIPS,0.000 MIPS,
+device CANEndpoint, 0.000 MIPS,0.000 MIPS,
 process LockupCtrlProc, 0.700 MIPS,0.000 MIPS,process abs_impl_Instance.LockupCtrlProc total 0.000 MIPS below budget 0.700 MIPS (100.0 % slack)
 process PresStabCtrlProc, 0.200 MIPS,0.000 MIPS,process abs_impl_Instance.PresStabCtrlProc total 0.000 MIPS below budget 0.200 MIPS (100.0 % slack)
-Total, ,0.900 MIPS,
+process EmitCANCtrlProc, 0.100 MIPS,0.000 MIPS,process abs_impl_Instance.EmitCANCtrlProc total 0.000 MIPS below budget 0.100 MIPS (100.0 % slack)
+Total, ,1.000 MIPS,
+
 ```
 
 ### Bound Resources Capacity
 
 ```csv
 Processor Summary Report: 
-  Processor Cpu: Total MIPS 0.900 MIPS of bound tasks within MIPS capacity 1.000 MIPS of Cpu
+  Processor Cpu: Total MIPS 1.000 MIPS of bound tasks within MIPS capacity 1.200 MIPS of Cpu
 
 Memory Summary Report: 
   No Memory with Memory_Size or RAMCapacity or ROMCapacity
 
 
-Detailed Workload Report:  for Processor Cpu with Capacity 1.000 MIPS
+Detailed Workload Report:  for Processor Cpu with Capacity 1.200 MIPS
 
 Component,Budget,Actual
 process LockupCtrlProc, 0.700 MIPS,0.000 MIPS,process abs_impl_Instance.LockupCtrlProc total 0.000 MIPS below budget 0.700 MIPS (100.0 % slack)
 process PresStabCtrlProc, 0.200 MIPS,0.000 MIPS,process abs_impl_Instance.PresStabCtrlProc total 0.000 MIPS below budget 0.200 MIPS (100.0 % slack)
-Total,,0.900 MIPS
+process EmitCANCtrlProc, 0.100 MIPS,0.000 MIPS,process abs_impl_Instance.EmitCANCtrlProc total 0.000 MIPS below budget 0.100 MIPS (100.0 % slack)
+Total,,1.000 MIPS
+
 ```
 
 ### Weight Totals
@@ -123,6 +137,9 @@ Total,,0.900 MIPS
 ```csv
 Weight totals Report
 
+Warning! IntBus: [L] No net weight plus subcomponent weight or no gross weight
+Warning! PrhBus: [L] No net weight plus subcomponent weight or no gross weight
+Warning! CANBus: [L] No net weight plus subcomponent weight or no gross weight
 HydroValveLR: [L] Sum of weights / gross weight is 1.600 kg (no limit specified)
 HydroValveRL: [L] Sum of weights / gross weight is 1.600 kg (no limit specified)
 HydroPump: [L] Sum of weights / gross weight is 2.400 kg (no limit specified)
@@ -133,8 +150,11 @@ AngleVelSensorBL: [L] Sum of weights / gross weight is 0.400 kg (no limit specif
 AngleVelSensorBR: [L] Sum of weights / gross weight is 0.400 kg (no limit specified)
 IndicatorLockup: [L] Sum of weights / gross weight is 0.100 kg (no limit specified)
 IndicatorFault: [L] Sum of weights / gross weight is 0.100 kg (no limit specified)
-Warning! abs_impl_Instance: [G] Sum of weights (8.000 kg) less than gross weight of 9.000 kg (using gross weight)
-abs_impl_Instance: [L] Sum of weights / gross weight is 9.000 kg (no limit specified)
+CANEndpoint: [L] Sum of weights / gross weight is 0.400 kg (no limit specified)
+Warning! CpuRam: [L] No net weight plus subcomponent weight or no gross weight
+Warning! CpuRom: [L] No net weight plus subcomponent weight or no gross weight
+Warning! Cpu: [L] No net weight plus subcomponent weight or no gross weight
+abs_impl_Instance: [A] Sum of weights (8.400 kg) is below weight limit of 10.000 kg (16.0 % Weight slack)
 ```
 
 ### Bus Load
@@ -145,18 +165,19 @@ Bus load analysis of abs_impl_Instance
 
 "Physical Bus","Capacity (KB/s)","Budget (KB/s)","Required Budget (KB/s)","Actual (KB/s)"
 "IntBus","2000.0","200.0","0.0","0.0"
-"PrhBus","1000.0","100.0","0.0","0.0"
+"PrhBus","1000.0","100.0","0.0","2.0"
+"CANBus","600.0","40.0","0.0","2.0"
 
 "Bus IntBus has data overhead of 0 bytes"
 "Bound Virtual Bus/Connection","Capacity (KB/s)","Budget (KB/s)","Required Budget (KB/s)","Actual (KB/s)"
 
 "Bus PrhBus has data overhead of 0 bytes"
 "Bound Virtual Bus/Connection","Capacity (KB/s)","Budget (KB/s)","Required Budget (KB/s)","Actual (KB/s)"
-"HydroPresSensor.Value -> PresStabCtrlProc.PresValue","","0.0","","0.0"
-"AngleVelSensorFL.Value -> LockupCtrlProc.AngleVelValueFL","","0.0","","0.0"
-"AngleVelSensorFR.Value -> LockupCtrlProc.AngleVelValueFR","","0.0","","0.0"
-"AngleVelSensorBL.Value -> LockupCtrlProc.AngleVelValueBL","","0.0","","0.0"
-"AngleVelSensorBR.Value -> LockupCtrlProc.AngleVelValueBR","","0.0","","0.0"
+"HydroPresSensor.Value -> PresStabCtrlProc.PresValue","","0.0","","0.4"
+"AngleVelSensorFL.Value -> LockupCtrlProc.AngleVelValueFL","","0.0","","0.4"
+"AngleVelSensorFR.Value -> LockupCtrlProc.AngleVelValueFR","","0.0","","0.4"
+"AngleVelSensorBL.Value -> LockupCtrlProc.AngleVelValueBL","","0.0","","0.4"
+"AngleVelSensorBR.Value -> LockupCtrlProc.AngleVelValueBR","","0.0","","0.4"
 "LockupCtrlProc.ValvePosLR -> HydroValveLR.Pos","","0.0","","0.0"
 "LockupCtrlProc.ValvePosRL -> HydroValveRL.Pos","","0.0","","0.0"
 "LockupCtrlProc.IndicatorLockUpOn -> IndicatorLockup.On","","0.0","","0.0"
@@ -192,4 +213,43 @@ Bus load analysis of abs_impl_Instance
 
 "Connection PresStabCtrlProc.IndicatorFaultOn -> IndicatorFault.On bound to PrhBus"
 "WARNING: Connection PresStabCtrlProc.IndicatorFaultOn -> IndicatorFault.On has no bandwidth budget"
+
+"Bus CANBus has data overhead of 0 bytes"
+"Bound Virtual Bus/Connection","Capacity (KB/s)","Budget (KB/s)","Required Budget (KB/s)","Actual (KB/s)"
+"HydroPresSensor.Value -> EmitCANCtrlProc.PresValue","","0.0","","0.4"
+"AngleVelSensorFL.Value -> EmitCANCtrlProc.AngleVelValueFL","","0.0","","0.4"
+"AngleVelSensorFR.Value -> EmitCANCtrlProc.AngleVelValueFR","","0.0","","0.4"
+"AngleVelSensorBL.Value -> EmitCANCtrlProc.AngleVelValueBL","","0.0","","0.4"
+"AngleVelSensorBR.Value -> EmitCANCtrlProc.AngleVelValueBR","","0.0","","0.4"
+"LockupCtrlProc.ValvePosLR -> EmitCANCtrlProc.ValvePosLR","","0.0","","0.0"
+"LockupCtrlProc.ValvePosRL -> EmitCANCtrlProc.ValvePosRL","","0.0","","0.0"
+"PresStabCtrlProc.PumpOn -> EmitCANCtrlProc.PumpOn","","0.0","","0.0"
+"EmitCANCtrlProc.PacketOut -> CANEndpoint.PacketIn","","0.0","","0.0"
+
+"Connection HydroPresSensor.Value -> EmitCANCtrlProc.PresValue bound to CANBus"
+"WARNING: Connection HydroPresSensor.Value -> EmitCANCtrlProc.PresValue has no bandwidth budget"
+
+"Connection AngleVelSensorFL.Value -> EmitCANCtrlProc.AngleVelValueFL bound to CANBus"
+"WARNING: Connection AngleVelSensorFL.Value -> EmitCANCtrlProc.AngleVelValueFL has no bandwidth budget"
+
+"Connection AngleVelSensorFR.Value -> EmitCANCtrlProc.AngleVelValueFR bound to CANBus"
+"WARNING: Connection AngleVelSensorFR.Value -> EmitCANCtrlProc.AngleVelValueFR has no bandwidth budget"
+
+"Connection AngleVelSensorBL.Value -> EmitCANCtrlProc.AngleVelValueBL bound to CANBus"
+"WARNING: Connection AngleVelSensorBL.Value -> EmitCANCtrlProc.AngleVelValueBL has no bandwidth budget"
+
+"Connection AngleVelSensorBR.Value -> EmitCANCtrlProc.AngleVelValueBR bound to CANBus"
+"WARNING: Connection AngleVelSensorBR.Value -> EmitCANCtrlProc.AngleVelValueBR has no bandwidth budget"
+
+"Connection LockupCtrlProc.ValvePosLR -> EmitCANCtrlProc.ValvePosLR bound to CANBus"
+"WARNING: Connection LockupCtrlProc.ValvePosLR -> EmitCANCtrlProc.ValvePosLR has no bandwidth budget"
+
+"Connection LockupCtrlProc.ValvePosRL -> EmitCANCtrlProc.ValvePosRL bound to CANBus"
+"WARNING: Connection LockupCtrlProc.ValvePosRL -> EmitCANCtrlProc.ValvePosRL has no bandwidth budget"
+
+"Connection PresStabCtrlProc.PumpOn -> EmitCANCtrlProc.PumpOn bound to CANBus"
+"WARNING: Connection PresStabCtrlProc.PumpOn -> EmitCANCtrlProc.PumpOn has no bandwidth budget"
+
+"Connection EmitCANCtrlProc.PacketOut -> CANEndpoint.PacketIn bound to CANBus"
+"WARNING: Connection EmitCANCtrlProc.PacketOut -> CANEndpoint.PacketIn has no bandwidth budget"
 ```
