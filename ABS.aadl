@@ -1,0 +1,265 @@
+package ABS
+public
+	with SEI;
+	with Data_Model;
+
+	data HydroValvePos
+		properties
+			Data_Model::Integer_Range => 1 .. 3;
+	end HydroValvePos;
+	
+	data HydroPres
+		properties
+			Data_Model::Integer_Range => 0 .. 4095;
+	end HydroPres;
+		
+	data AngleVel
+		properties
+			Data_Model::Integer_Range => 0 .. 4095;
+	end angleVel;
+	
+	data OnOff
+		properties
+			Data_Model::Integer_Range => 0 .. 1;
+	end OnOff;
+
+	device hydro_valve
+		features
+			Pos : in data port HydroValvePos;
+		properties
+			SEI::GrossWeight => 1.6kg;
+			Dispatch_Protocol => Periodic;
+			Period => 5ms;
+	end hydro_valve;
+	
+	device hydro_pump
+		features
+			On : in data port OnOff;
+		properties
+			SEI::GrossWeight => 2.4kg;
+			Dispatch_Protocol => Periodic;
+			Period => 15ms;
+	end hydro_pump;
+	
+	device hydro_pres_sensor
+		features
+			Value : out data port HydroPres;
+		properties
+			SEI::GrossWeight => 0.6kg;
+			Dispatch_Protocol => Periodic;
+			Period => 5ms;
+	end hydro_pres_sensor;
+	
+	device angle_vel_sensor
+		features
+			Value : out data port angleVel;
+		properties
+			SEI::GrossWeight => 0.4kg;
+			Dispatch_Protocol => Periodic;
+			Period => 5ms;
+	end angle_vel_sensor;
+	
+	device sys_indicator
+		features
+			On : in data port OnOff;
+		properties
+			SEI::GrossWeight => 0.1kg;
+			Dispatch_Protocol => Periodic;
+			Period => 20ms;
+	end sys_indicator;
+	
+	-- Wheel lockup controller
+	thread sys_lockup_ctrl
+		features
+			AngleVelValueFL : in data port AngleVel;
+			AngleVelValueFR : in data port AngleVel;
+			AngleVelValueBL : in data port AngleVel;
+			AngleVelValueBR : in data port AngleVel;
+			ValvePosLR : out data port HydroValvePos;
+			ValvePosRL : out data port HydroValvePos;
+			IndicatorLockUpOn : out data port OnOff;
+		properties
+	    	Dispatch_Protocol => Periodic;
+	    	Dispatch_Offset => 	2ms;
+	    	Deadline => 15ms;	
+	    	Period => 20ms;
+	    	Compute_Execution_Time => 0ms..2ms;		
+	end sys_lockup_ctrl;
+	
+	thread implementation sys_lockup_ctrl.impl
+	end sys_lockup_ctrl.impl;
+	
+	-- Pressure stab controller
+	thread sys_pres_stab_ctrl
+		features
+			PresValue : in data port HydroPres;
+			PumpOn : out data port OnOff;
+			IndicatorFaultOn : out data port OnOff;
+		properties
+	    	Dispatch_Protocol => Periodic;
+	    	Dispatch_Offset => 	2ms;
+	    	Deadline => 15ms;	
+	    	Period => 20ms;
+	    	Compute_Execution_Time => 0ms..2ms;			
+	end sys_pres_stab_ctrl;
+	
+	thread implementation sys_pres_stab_ctrl.impl
+	end sys_pres_stab_ctrl.impl;
+	
+	-- Reacts to sensor data (4 wheels) and sends commands to actuators (2 valves)
+	process sys_lockup_ctrl_proc
+		features
+			AngleVelValueFL : in data port AngleVel;
+			AngleVelValueFR : in data port AngleVel;
+			AngleVelValueBL : in data port AngleVel;
+			AngleVelValueBR : in data port AngleVel;
+			ValvePosLR : out data port HydroValvePos;
+			ValvePosRL : out data port HydroValvePos;
+			IndicatorLockUpOn : out data port OnOff;
+		properties
+			SEI::MIPSBudget => 0.7mips;
+	end sys_lockup_ctrl_proc;
+	
+	process implementation sys_lockup_ctrl_proc.impl
+		subcomponents
+			Ctrl : thread sys_lockup_ctrl.impl;
+		connections
+			angle_vel_value_fl_conn : port AngleVelValueFL -> Ctrl.AngleVelValueFL;
+			angle_vel_value_fr_conn : port AngleVelValueFR -> Ctrl.AngleVelValueFR;
+			angle_vel_value_bl_conn : port AngleVelValueBL -> Ctrl.AngleVelValueBL;
+			angle_vel_value_br_conn : port AngleVelValueBR -> Ctrl.AngleVelValueBR;
+			valve_pos_lr_conn : port Ctrl.ValvePosLR -> ValvePosLR;
+			valve_pos_rl_conn : port Ctrl.ValvePosRL -> ValvePosRL;
+	end sys_lockup_ctrl_proc.impl;
+	
+	-- Reacts to pressure drops and stabilizes pressure by modulating pump
+	process sys_pres_stab_ctrl_proc
+		features
+			PresValue : in data port HydroPres;
+			PumpOn : out data port OnOff;
+			IndicatorFaultOn : out data port OnOff;
+		properties
+			SEI::MIPSBudget => 0.2mips;
+	end sys_pres_stab_ctrl_proc;
+	
+	process implementation sys_pres_stab_ctrl_proc.impl
+		subcomponents
+			Ctrl : thread sys_pres_stab_ctrl.impl;
+		connections
+			pres_value_conn : port PresValue -> Ctrl.PresValue;
+			pump_on_conn : port Ctrl.PumpOn -> PumpOn;
+	end sys_pres_stab_ctrl_proc.impl;
+	
+	-- CPU & buses
+	processor sys_cpu
+		features
+			int_bus : requires bus access sys_int_bus;
+			prh_bus : requires bus access sys_prh_bus;
+		properties
+			Scheduling_Protocol => (RMS);
+			Clock_Period => 1us;	
+        	SEI::MIPSCapacity => 1.0mips;
+	end sys_cpu;
+	
+	bus sys_int_bus
+	   properties
+    	Transmission_Time => [Fixed => 10ns .. 15ns; PerByte => 400ns .. 450ns;];
+    	SEI::BandWidthCapacity => 2.0 MBytesps;
+    	SEI::BandWidthBudget => 200.0 KBytesps;
+	end sys_int_bus;
+	
+	bus sys_prh_bus
+	   properties
+    	Transmission_Time => [Fixed => 50ns..60ns; PerByte => 1us .. 2us;];
+    	SEI::BandWidthCapacity => 1.0 MBytesps;
+    	SEI::BandWidthBudget => 100.0 KBytesps;
+	end sys_prh_bus;
+	
+	memory sys_ram
+		features
+			int_bus : requires bus access sys_int_bus;
+	end sys_ram;
+	
+	memory implementation sys_ram.impl
+		properties
+			Base_Address => 016#0000#;
+			Memory_Size => 016#4000# bytes;
+	end sys_ram.impl;
+	
+	memory sys_rom
+		features
+			int_bus : requires bus access sys_int_bus;	
+	end sys_rom;
+	
+	memory implementation sys_rom.impl
+		properties
+			Base_Address => 016#0000#;
+			Memory_Size => 016#c000# bytes;
+	end sys_rom.impl;
+	
+	
+	-- System
+	
+	system abs
+		properties
+			SEI::GrossWeight => 2.0kg;
+	end abs;
+	
+	system implementation abs.impl
+		subcomponents
+			-- CPU & bus
+			Cpu : processor sys_cpu;
+			CpuRam : memory sys_ram;
+			CpuRom : memory sys_rom;
+			IntBus : bus sys_int_bus;
+			PrhBus : bus sys_prh_bus;
+			-- Controllers
+			LockupCtrlProc : process sys_lockup_ctrl_proc;
+			PresStabCtrlProc : process sys_pres_stab_ctrl_proc;
+			-- Devices
+			HydroValveLR : device hydro_valve;
+			HydroValveRL : device hydro_valve;	
+			HydroPump : device hydro_pump;
+			HydroPresSensor : device hydro_pres_sensor;
+			AngleVelSensorFL : device angle_vel_sensor;
+			AngleVelSensorFR : device angle_vel_sensor;
+			AngleVelSensorBL : device angle_vel_sensor;
+			AngleVelSensorBR : device angle_vel_sensor;
+			IndicatorLockup : device sys_indicator;
+			IndicatorFault : device sys_indicator;
+		connections
+			-- CPU to buses
+			cpu_int_conn : bus access IntBus <-> Cpu.int_bus;
+			cpu_prh_conn : bus access PrhBus <-> Cpu.prh_bus;
+			cpu_ram_conn : bus access IntBus <-> CpuRam.int_bus;
+			cpu_rom_conn : bus access IntBus <-> CpuRom.int_bus;
+			-- Controllers to devices
+			hydro_valve_lr_conn : port LockupCtrlProc.ValvePosLR -> HydroValveLR.Pos;
+			hydro_valve_rl_conn : port LockupCtrlProc.ValvePosRL -> HydroValveRL.Pos;
+			angle_vel_fl_conn : port AngleVelSensorFL.Value -> LockupCtrlProc.AngleVelValueFL;
+			angle_vel_fr_conn : port AngleVelSensorFR.Value -> LockupCtrlProc.AngleVelValueFR;
+			angle_vel_bl_conn : port AngleVelSensorBL.Value -> LockupCtrlProc.AngleVelValueBL;
+			angle_vel_br_conn : port AngleVelSensorBR.Value -> LockupCtrlProc.AngleVelValueBR;
+			hydro_pump_conn : port PresStabCtrlProc.PumpOn -> HydroPump.On;
+			hydro_pres_conn : port HydroPresSensor.Value -> PresStabCtrlProc.PresValue;
+			indicator_lockup_conn : port LockupCtrlProc.IndicatorLockupOn -> IndicatorLockup.On;
+			indicator_fault_conn : port PresStabCtrlProc.IndicatorFaultOn -> IndicatorFault.On;
+		properties
+			-- Bindings
+			Actual_Connection_Binding => (reference(PrhBus)) applies to hydro_valve_lr_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to hydro_valve_rl_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to angle_vel_fl_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to angle_vel_fr_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to angle_vel_bl_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to angle_vel_br_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to hydro_pump_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to hydro_pres_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to indicator_lockup_conn;
+			Actual_Connection_Binding => (reference(PrhBus)) applies to indicator_fault_conn;
+			Actual_Processor_Binding => (reference(Cpu)) applies to LockupCtrlProc;
+			Actual_Processor_Binding => (reference(Cpu)) applies to PresStabCtrlProc;
+			Actual_Memory_Binding => (reference(CpuRom)) applies to Cpu;
+			Actual_Memory_Binding => (reference(CpuRam)) applies to LockupCtrlProc;
+			Actual_Memory_Binding => (reference(CpuRam)) applies to PresStabCtrlProc;
+	end abs.impl;
+end ABS;
