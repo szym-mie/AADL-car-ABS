@@ -267,7 +267,5 @@ Bus load analysis of abs_impl_Instance
 Connection Binding Consistency
 
 ```csv
-Check connection binding consistency Report
-
-ERROR:  EmitCANCtrlProc.PacketOut -> CANEndpoint.PacketIn: Hardware (processor or device) of connection destination is not physically connected by bus specified in connection binding.
+0 ERRORS
 ```
