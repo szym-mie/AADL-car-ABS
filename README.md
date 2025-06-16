@@ -17,9 +17,9 @@ np. czujniki prędkości obrotowej obsługuje jeden proces. System zawiera zatem
 zbierania danych predkości obrotowej, obsługi elektrozaworów, obsługi pompy,
 sprawdzenia ciśnienia układu, kontrolek inforumujących o stanie systemu.
 
-W trakcie pracy i czuwania systemu co 20ms wysylane jest na magistrale CAN
-pakiety: stanu blokady kol (prekosc i pozycje zaworow), stanu ukladu hydraulicznego
-(cisnienie i stan zalaczenia pompy).
+W trakcie zarówno pracy i czuwania systemu co 20ms wysyłane jest na magistralę CAN
+pakiety: stanu blokady kół (prędkość i pozycje zaworów), stanu układu hydraulicznego
+(ciśnienie i stan załączenia pompy).
 
 ### Zachowanie systemu
 
@@ -53,24 +53,32 @@ Kierowca ma posredni lecz realny wplyw na stan systemu korzystajac z hamulca i p
 powodujac poslizg kol. W trakcie dzialania systemu, miga pomaranczowa kontrolka ABS,
 w wypadku zbyt niskiego cisnienia w ukladzie swieci sie kontrolka hamulcow.
 
-## Podstawowe komponenty
-- *(data)* AngleVel - typ danych predkosci katowej 12-bitowy fixed-point 
-- *(data)* HydroPres - typ danych cisnienia hydraulicznego 12-bitowy fixed-point
-- *(data)* ValvePos - typ danych pozycji zaworu - zwiekszenie cisnienia, zmniejszenie cisnienia, zamkniety
-- *(data)* OnOff - typ danych wylaczenia/wlaczenia
-- *(data)* CANPacket - abstrakcyjny pakiet CAN
-- *(processor, memory)* mikroprocesor z pamięcią RAM i ROM
-- *(bus)* magistrale: wewn. (Int) i zewn. (Prh), CAN
-- *(device)* 4 czujniki prędkości obrotowej dla każdego koła
-- *(device)* 2 elektrozawory obu obwodów
-- *(device)* pompa stabilizująca ciśnienie w układzie hamulcowym
-- *(device)* czujnik ciśnienia układu hamulcowego
-- *(device)* kontrolka informująca kierowce o aktywacji systemu
-- *(device)* kontrolka informująca o awarii systemu ABS / układu hamowania
-- *(device)* transmitter/receiver pakietow CAN
-- *(process & 1 thread)* kontroler predkosci kol i poslizgu
-- *(process & 1 thread)* kontroler stabilizacji cisnienia
-- *(process & 2 threads)* emiter stanu systemu (blokowania kol, cisnienia systemu hamowania)
+## Komponenty systemu
+
+| Typ                   | Instancja                | Opis                                                                                 |
+|-----------------------|--------------------------|--------------------------------------------------------------------------------------|
+| *data*                | `AngleVel`               | Typ danych prędkości kątowej, 12-bitowy fixed-point                                  |
+| *data*                | `HydroPres`              | Typ danych ciśnienia hydraulicznego, 12-bitowy fixed-point                           |
+| *data*                | `ValvePos`               | Typ danych pozycji zaworu – zwiększenie ciśnienia, zmniejszenie ciśnienia, zamknięty |
+| *data*                | `OnOff`                  | Typ danych wyłączenia/włączenia                                                      |
+| *data*                | `CANPacket`              | Abstrakcyjny pakiet CAN                                                              |
+| *processor*           | `CPU`                    | Mikrokontroler wykonujący program ABS                                                |
+| *memory*              | `CPURom`                 | Pamięć zawierająca program, podpięta do `IntBus`                                     |
+| *memory*              | `CPURam`                 | Pamięc operacyjna mikrokontrolera, podpięta do `IntBus`                              |
+| *bus*                 | `IntBus`                 | Magistrala wewnętrzna, obsługująca pamięci i mikrokontroler                          |
+| *bus*                 | `PrhBus`                 | Magistrala zewnętrzna dla peryferiów                                                 |
+| *bus*                 | `CANBus`                 | Magistrala CAN samochodu (komponent z "zewnątrz")                                    |
+| *device*              | `AngleVelSensor**`       | 4 czujniki prędkości obrotowej dla każdego koła                                      |
+| *device*              | `HydroValve**`           | 2 elektrozawory obu obwodów                                                          |
+| *device*              | `HydroPump`              | Pompa stabilizująca ciśnienie w układzie hamulcowym                                  |
+| *device*              | `HydroPresSensor`        | Czujnik ciśnienia układu hamulcowego                                                 |
+| *device*              | `IndicatorLockup`        | Kontrolka informująca kierowcę o aktywacji systemu                                   |
+| *device*              | `IndicatorFault`         | Kontrolka informująca o awarii systemu ABS / układu hamowania                        |
+| *device*              | `CANEndpoint`            | Transmitter/receiver pakietów CAN                                                    |
+| *process*             | `LockupCtrlProc`         | Proces kontrolujący prędkości kół i detekcji poślizgu, 1 wątek                       |
+| *process*             | `PresStabCtrlProc`       | Proces stabilizacji ciśnienia, 1 wątek                                               |
+| *process*             | `EmitCANCtrlProc`        | Proces emitujący stanu systemu (wątek blokowania kół, wątek ciśnienia systemu hamowania) |
+
 
 ## Schemat systemu
 
