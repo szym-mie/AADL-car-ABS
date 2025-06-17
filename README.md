@@ -4,7 +4,14 @@
 
 System czasu rzeczywistego modelujący system ABS w samochodzie.
 
+![abs_symbol](https://upload.wikimedia.org/wikipedia/commons/8/86/Antilock_Braking_System.svg)
+
 ## Opis systemu
+
+![abs_brakes](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/ABS-Sensor.jpg/960px-ABS-Sensor.jpg)
+
+Na zdjęciu: Układ pomiaru prędkości kątowej 
+(wewnętrzny, węższy pierścień), widoczny fragment tarczy hamulcowej
 
 ### Interakcje w systemie
 
@@ -49,11 +56,17 @@ ABS lub/i hamulcowego.
 
 ## Opis dla kierowcy
 
-Kierowca ma posredni lecz realny wplyw na stan systemu korzystajac z hamulca i potencjalnie
-powodujac poslizg kol. W trakcie dzialania systemu, miga pomaranczowa kontrolka ABS,
-w wypadku zbyt niskiego cisnienia w ukladzie swieci sie kontrolka hamulcow.
+Kierowca ma pośredni lecz realny wpływ na stan systemu korzystając z hamulca i potencjalnie
+powodując poślizg kół. W trakcie działania systemu, miga pomarańczowa kontrolka ABS,
+w wypadku zbyt niskiego ciśnienia w układzie hamulcowym/awarii systemu ABS świeci sie 
+kontrolka hamulców.
 
 ## Komponenty systemu
+
+![abs_sensors](https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/ABS_Sensor_GM_IMG_0557.JPG/330px-ABS_Sensor_GM_IMG_0557.JPG)
+![abs_valves](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/ABS_HCU_April_2018.jpg/330px-ABS_HCU_April_2018.jpg)
+
+Sensory prędkości obrotowej i zestaw zaworów układu hydraulicznego
 
 | Typ                   | Instancja                | Opis                                                                                 |
 |-----------------------|--------------------------|--------------------------------------------------------------------------------------|
